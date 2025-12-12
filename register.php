@@ -10,28 +10,42 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $gender = $_POST['gender'] ?? '';
     $bloodGroup = $_POST['blood_group'] ?? '';
     $phone = trim($_POST['phone'] ?? '');
+    $password = $_POST['password'] ?? '';
+    $confirmPassword = $_POST['confirm_password'] ?? '';
 
-    // Connect to DB (suppress debug echo from db_connect.php)
-    ob_start();
-    include 'db_connect.php';
-    ob_end_clean();
-
-    if ($conn instanceof mysqli && !$conn->connect_error) {
-        $stmt = $conn->prepare("INSERT INTO Donor (name, age, gender, blood_group, phone_number) VALUES (?, ?, ?, ?, ?)");
-        if ($stmt) {
-            $stmt->bind_param("sisss", $name, $age, $gender, $bloodGroup, $phone);
-            if ($stmt->execute()) {
-                $successMessage = "Donor registered successfully.";
-            } else {
-                $errorMessage = "Failed to register donor: " . $stmt->error;
-            }
-            $stmt->close();
-        } else {
-            $errorMessage = "Could not prepare the statement: " . $conn->error;
-        }
-        $conn->close();
+    // Validate password
+    if (empty($password)) {
+        $errorMessage = "Password is required.";
+    } elseif (strlen($password) < 6) {
+        $errorMessage = "Password must be at least 6 characters long.";
+    } elseif ($password !== $confirmPassword) {
+        $errorMessage = "Passwords do not match.";
     } else {
-        $errorMessage = "Database connection failed.";
+        // Hash the password before storing
+        $hashedPassword = password_hash($password, PASSWORD_DEFAULT);
+
+        // Connect to DB (suppress debug echo from db_connect.php)
+        ob_start();
+        include 'db_connect.php';
+        ob_end_clean();
+
+        if ($conn instanceof mysqli && !$conn->connect_error) {
+            $stmt = $conn->prepare("INSERT INTO Donor (name, age, gender, blood_group, phone_number, Password) VALUES (?, ?, ?, ?, ?, ?)");
+            if ($stmt) {
+                $stmt->bind_param("sissss", $name, $age, $gender, $bloodGroup, $phone, $hashedPassword);
+                if ($stmt->execute()) {
+                    $successMessage = "Donor registered successfully.";
+                } else {
+                    $errorMessage = "Failed to register donor: " . $stmt->error;
+                }
+                $stmt->close();
+            } else {
+                $errorMessage = "Could not prepare the statement: " . $conn->error;
+            }
+            $conn->close();
+        } else {
+            $errorMessage = "Database connection failed.";
+        }
     }
 }
 ?>
@@ -86,9 +100,18 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                                 <option value="O-">O-</option>
                             </select>
                         </div>
-                        <div class="mb-4">
+                        <div class="mb-3">
                             <label for="phone" class="form-label">Phone Number</label>
                             <input type="tel" class="form-control" id="phone" name="phone" required>
+                        </div>
+                        <div class="mb-3">
+                            <label for="password" class="form-label">Password</label>
+                            <input type="password" class="form-control" id="password" name="password" required minlength="6">
+                            <small class="form-text text-muted">Password must be at least 6 characters long.</small>
+                        </div>
+                        <div class="mb-4">
+                            <label for="confirm_password" class="form-label">Confirm Password</label>
+                            <input type="password" class="form-control" id="confirm_password" name="confirm_password" required minlength="6">
                         </div>
                         <div class="d-grid">
                             <button type="submit" class="btn btn-danger">Register</button>
