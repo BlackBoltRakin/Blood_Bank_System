@@ -99,11 +99,14 @@ $stmt->close();
                     <i class="bi bi-person-circle"></i> Your Profile
                 </div>
                 <div class="card-body">
-                    <p class="mb-2"><strong>Blood Type:</strong>
-                        <?php echo htmlspecialchars($donor_info['Blood_Type']); ?></p>
+                    <p class="mb-2"><strong>Blood Group:</strong>
+                        <?php echo htmlspecialchars($donor_info['Blood_Group']); ?></p>
                     <p class="mb-2"><strong>Phone:</strong> <?php echo htmlspecialchars($donor_info['Phone_Number']); ?>
                     </p>
-                    <p class="mb-2"><strong>City:</strong> <?php echo htmlspecialchars($donor_info['City']); ?></p>
+                    <p class="mb-2"><strong>Age:</strong> <?php echo htmlspecialchars($donor_info['Age'] ?? 'N/A'); ?>
+                    </p>
+                    <p class="mb-2"><strong>Gender:</strong>
+                        <?php echo htmlspecialchars($donor_info['Gender'] ?? 'N/A'); ?></p>
                     <a href="edit_profile.php" class="btn btn-primary btn-sm">Edit Profile</a>
                 </div>
             </div>
